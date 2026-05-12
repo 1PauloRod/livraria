@@ -1,0 +1,348 @@
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Fundo */
+body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Card principal */
+.main-card {
+    background: #fff;
+    width: 95%;
+    max-width: 900px;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+/* Header */
+.main-card h1 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+/* Botão logout */
+#logout {
+    float: right;
+    margin-top: -45px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+#logout:hover {
+    background: #dc2626;
+}
+
+/* Navegação */
+nav ul {
+    list-style: none;
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+/* Botões do menu */
+nav button {
+    background: #7c3aed;
+    color: white;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+nav button:hover {
+    background: #5b21b6;
+}
+
+/* Card de livros */
+.books-card {
+    background: #f9fafb;
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid #eee;
+}
+
+/* Input de busca */
+#search {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    outline: none;
+}
+
+#search:focus {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+}
+
+/* Lista de livros */
+#books {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+/* Card individual de livro */
+.book-item {
+    background: white;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    transition: 0.2s;
+    cursor: pointer;
+}
+
+.book-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* Título do livro */
+.book-item h3 {
+    font-size: 14px;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+/* Autor */
+.book-item p {
+    font-size: 12px;
+    color: #777;
+}
+
+/* Responsivo */
+@media (max-width: 600px) {
+    nav ul {
+        flex-direction: column;
+    }
+
+    #logout {
+        position: static;
+        margin-bottom: 10px;
+    }
+}
+
+/* Container dos livros com scroll */
+#books {
+    max-height: 350px;
+    overflow-y: auto;
+    padding-right: 5px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Scrollbar customizada (opcional, mas bonita) */
+#books::-webkit-scrollbar {
+    width: 6px;
+}
+
+#books::-webkit-scrollbar-thumb {
+    background: #7c3aed;
+    border-radius: 10px;
+}
+
+/* Item padrão */
+.book-item {
+    background: #ffffff;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: 0.2s;
+}
+
+/* Hover */
+.book-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(0,0,0,0.1);
+}
+
+/* Livro indisponível */
+.book-unavailable {
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+}
+
+/* Texto indisponível */
+.book-unavailable span {
+    color: #b91c1c;
+    font-weight: bold;
+}
+
+/* Botão alugar */
+.book-item button {
+    background: #22c55e;
+    border: none;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.book-item button:hover {
+    background: #16a34a;
+}
+
+.rented-item {
+    background: #f1f5f9;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+}
+
+/* Item de empréstimo */
+.rented-item {
+    background: #f1f5f9;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+/* Empréstimo ATIVO (verde) */
+.rented-active {
+    background: #dcfce7;
+    border: 1px solid #86efac;
+}
+
+/* Texto do status */
+.rented-status {
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+/* Verde (ativo) */
+.status-active {
+    color: #166534;
+}
+
+/* Cinza (devolvido) */
+.status-returned {
+    color: #555;
+}
+
+/* Inputs edição */
+.book-item input {
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    margin-bottom: 8px;
+    width: 100%;
+}
+
+/* Área edição */
+.book-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Botões edição */
+.book-item button {
+    margin-top: 5px;
+}
+
+/* Estrutura dos cards */
+.book-item,
+.rented-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Texto ocupa espaço disponível */
+.book-item p,
+.rented-item p {
+    flex: 1;
+    margin: 0;
+}
+
+/* Área de ações */
+.actions {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}
+
+/* Botões */
+.actions button {
+    padding: 6px 10px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+/* Excluir */
+.btn-delete {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-delete:hover {
+    background: #dc2626;
+}
+
+/* Editar */
+.btn-edit {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-edit:hover {
+    background: #2563eb;
+}
+
+/* Salvar */
+.btn-save {
+    background: #22c55e;
+    color: white;
+}
+
+.btn-save:hover {
+    background: #16a34a;
+}
+
+/* Cancelar */
+.btn-cancel {
+    background: #6b7280;
+    color: white;
+}
+
+.btn-cancel:hover {
+    background: #4b5563;
+}
+
+/* Ações dos livros centralizadas */
+.book-actions {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 10px;
+}

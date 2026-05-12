@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/auth.css">
+    <title>Document</title>
+</head>
+<body>
+    <div class="card-register">
+        <h1>Cadastro</h1>
+
+        <form id="register-form">
+            <input id="name" type="name" placeholder="Nome" required>
+            <input id="last-name" type="name" placeholder="Sobrenome" required>
+            <input id="email" type="email" placeholder="Email" required>
+            <input id="password" type="password" placeholder="Senha" required>
+            <input id="password2" type="password" placeholder="Confirmar senha" required></password> 
+                
+            <button type="submit">Cadastrar</button>
+            <p class="switch-auth">
+                Já tem login? <a href="login.html">Entre!</a>
+            </p>
+        </form>
+
+    </div>    
+
+    <script src="../js/utils/auth.js"       type="module"></script>
+    <script src="../js/api/config.js"       type="module"></script>
+    <script src="../js/api/auth.js"         type="module"></script>
+    <script src="../js/pages/register.js"   type="module"></script>
+
+</body>
+</html>

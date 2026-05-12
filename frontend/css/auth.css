@@ -1,0 +1,107 @@
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Fundo da página */
+body {
+    height: 100vh;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Card central */
+.card-register {
+    background: #ffffff;
+    padding: 40px 30px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 350px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+/* Título */
+.card-register h1 {
+    margin-bottom: 25px;
+    color: #333;
+}
+
+/* Inputs */
+.card-register input {
+    width: 100%;
+    padding: 12px 14px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    outline: none;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+/* Foco no input */
+.card-register input:focus {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+}
+
+/* Botão */
+.card-register button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: #7c3aed;
+    color: white;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.switch-auth {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #555;
+}
+
+.switch-auth a {
+    color: #7c3aed;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.2s ease;
+}
+
+.switch-auth a:hover {
+    color: #5b21b6;
+    text-decoration: underline;
+}
+
+/* Hover botão */
+.card-register button:hover {
+    background: #5b21b6;
+}
+
+/* Pequeno efeito de clique */
+.card-register button:active {
+    transform: scale(0.98);
+}
+
+/* Responsividade */
+@media (max-width: 400px) {
+    .card-register {
+        padding: 30px 20px;
+    }
+}
+
+#error-message {
+    margin-top: 10px;
+    color: #dc2626;
+    font-size: 14px;
+    font-weight: bold;
+    min-height: 18px;
+}
