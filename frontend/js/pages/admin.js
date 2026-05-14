@@ -1,4 +1,4 @@
-import { requiredeAuth, logout } from "../utils/auth.js";
+import { requiredeAuth, logout, requireAdmin } from "../utils/auth.js";
 import { getBooks, 
     getRentedAllBooks, 
     rentBooks, 
@@ -9,6 +9,7 @@ import { getBooks,
 import { getAllUsers, removeUser } from "../api/auth.js";
 
 requiredeAuth();
+requireAdmin();
 
 let allBooks = [];
 let allUsers = []; 
@@ -182,6 +183,7 @@ function renderUsers(users){
     container.innerHTML = "";
 
     users.forEach((user) => {
+
         const div = document.createElement("div");
         div.classList.add("rented-item");
 

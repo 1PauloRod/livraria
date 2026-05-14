@@ -47,7 +47,7 @@ class LoginView(APIView):
     
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = [TokenAuthentication] 
+    #authentication_classes = [TokenAuthentication] 
 
     def post(self, request):
         request.auth.delete()
@@ -61,7 +61,7 @@ def is_admin(user):
 class MeView(APIView):
     
     permission_classes = [IsAuthenticated]
-    authentication_classes = [TokenAuthentication]
+    #authentication_classes = [TokenAuthentication]
 
     def get(self, request):
         user = request.user
@@ -87,7 +87,7 @@ class MeView(APIView):
 class DeletaUsuario(APIView):
 
     permission_classes = [IsAuthenticated]
-    authentication_classes = [TokenAuthentication]
+    #authentication_classes = [TokenAuthentication]
 
     def delete(self, request, user_id):
         
@@ -110,7 +110,7 @@ class DeletaUsuario(APIView):
 class ListaUsuarios(APIView):
 
     permission_classes = [IsAuthenticated]
-    authentication_classes = [TokenAuthentication]
+    #authentication_classes = [TokenAuthentication]
 
     def get(self, request):
 
@@ -125,11 +125,11 @@ class ListaUsuarios(APIView):
 
         if q:
             usuarios = User.objects.filter(
-                email__icontains=q
+                email__icontains=q, is_superuser=False
                 ) | User.objects.filter(
-                    name__icontains = q
+                    name__icontains = q, is_superuser=False
                 ) | User.objects.filter(
-                    last_name__icontains = q
+                    last_name__icontains = q, is_superuser=False
                 )
         else:
             usuarios = User.objects.filter(is_superuser=False)

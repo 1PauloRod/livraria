@@ -1,5 +1,4 @@
 import { BASE_URL, getAuthHeaders } from "../api/config.js"
-import { getToken } from "../utils/auth.js";
 
 export async function registerRequest(data){
     const response = await fetch(`${BASE_URL}/accounts/register/`, 
@@ -35,12 +34,9 @@ export async function loginRequest(data){
 
 
 export async function getMe(){
-    const token = getToken();    
 
     const response = await fetch(`${BASE_URL}/accounts/me/`, {
-        headers: {
-            "Authorization": `Token ${token}`
-        }
+        headers: getAuthHeaders()
     });
 
     if (!response.ok){
@@ -50,14 +46,11 @@ export async function getMe(){
 }
 
 export async function getAllUsers(termo=""){
-    const token = getToken();
 
     const response = await fetch(`${BASE_URL}/accounts/listar/?q=${encodeURIComponent(termo)}`, 
         {
             method: "GET", 
-            headers: {
-                "Authorization": `Token ${token}`
-           } 
+            headers: getAuthHeaders()
         }
     );
 

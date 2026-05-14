@@ -1,7 +1,8 @@
-import { requiredeAuth, logout } from "../utils/auth.js";
+import { requiredeAuth, logout, redirectHome, requireUser } from "../utils/auth.js";
 import { getBooks, rentBooks, getRentedBooks } from "../api/books.js";
 
 requiredeAuth();
+requireUser();
 
 const title = document.querySelector("h1");
 const user = JSON.parse(localStorage.getItem("user"));

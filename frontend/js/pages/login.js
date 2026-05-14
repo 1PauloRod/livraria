@@ -1,5 +1,5 @@
 import { loginRequest, getMe } from "../api/auth.js";
-import { saveToken, redirectHome } from "../utils/auth.js"
+import { saveTokens, redirectHome } from "../utils/auth.js"
 
 redirectHome(); 
 
@@ -14,13 +14,8 @@ form.addEventListener("submit", async (e) => {
 
     try{
         const data = await loginRequest({ email, password});
-        
-        console.log("LOGIN RESPONSE COMPLETO:", data);
-        console.log("ACCESS:", data.token);
 
-        const token = data.token
-
-        saveToken(token);
+        saveTokens(data.access, data.refresh);
 
         const user = await getMe();
 
