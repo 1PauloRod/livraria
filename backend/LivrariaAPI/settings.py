@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'UserApp', 
     'LivroApp', 
     'EmprestimoApp',
+    'drf_spectacular'
 ]
 
 AUTH_USER_MODEL = 'UserApp.User'
@@ -73,7 +74,14 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         #"rest_framework.authentication.TokenAuthentication", 
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ]
+    ], 
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "API Livraria",
+    "DESCRIPTION": "Documentação da API de gerenciamento bibliotecário",
+    "VERSION": "1.0.0",
 }
 
 TEMPLATES = [

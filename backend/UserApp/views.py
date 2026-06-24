@@ -4,14 +4,33 @@ from rest_framework.permissions import AllowAny
 from .serializers import RegisterSerializer, UserSerializer
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
-from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate
 from .models import User
 from EmprestimoApp.models import Emprestimo
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
+    
+    @extend_schema(
+        summary="Registrar usuário",
+        description="Cria um novo usuário e retorna um token de autenticação.",
+        request=RegisterSerializer,
+        responses={
+            201: {
+                "type": "object",
+                "properties": {
+                    "token": {
+                        "type": "string",
+                        "example": "abc123tokenxyz"
+                    }
+                }
+            },
+            400: RegisterSerializer,
+        },
+        tags=["Autenticação"],
+    )
 
     def post(self, request):
 
@@ -22,12 +41,45 @@ class RegisterView(APIView):
             user = serializer.save()
             token, _ = Token.objects.get_or_create(user=user)
             return Response({"token": token.key}, status=201)
+        
+        print("ERRORS:", serializer.errors)
         return Response(serializer.errors, status=400)
 
 
 class LoginView(APIView):
     permission_classes = [AllowAny] 
     authentication_classes = []
+    
+    @extend_schema(
+        summary="Login do usuário",
+        description="Autentica o usuário via email e senha e retorna um token.",
+        request={
+            "type": "object",
+            "properties": {
+                "email": {"type": "string", "example": "user@email.com"},
+                "password": {"type": "string", "example": "123456"},
+            },
+            "required": ["email", "password"],
+        },
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "token": {
+                        "type": "string",
+                        "example": "abc123token"
+                    }
+                }
+            },
+            400: {
+                "type": "object",
+                "properties": {
+                    "error": {"type": "string"}
+                }
+            }
+        },
+        tags=["Autenticação"],
+    )
 
     def post(self, request):
         email = request.data.get("email")
@@ -47,7 +99,25 @@ class LoginView(APIView):
     
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
-    #authentication_classes = [TokenAuthentication] 
+    
+    @extend_schema(
+        summary="Logout do usuário",
+        description="Remove o token de autenticação do usuário logado.",
+        request=None,
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "Logout realizado com sucesso"
+                    }
+                }
+            },
+            401: None,
+        },
+        tags=["Autenticação"],
+    )
 
     def post(self, request):
         request.auth.delete()
@@ -61,8 +131,28 @@ def is_admin(user):
 class MeView(APIView):
     
     permission_classes = [IsAuthenticated]
-    #authentication_classes = [TokenAuthentication]
-
+    
+    @extend_schema(
+        summary="Dados do usuário logado",
+        description="Retorna os dados do usuário autenticado no sistema.",
+        request=None,
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "id": {"type": "integer", "example": 1},
+                    "name": {"type": "string", "example": "João"},
+                    "last_name": {"type": "string", "example": "Silva"},
+                    "email": {"type": "string", "example": "joao@email.com"},
+                    "bibliotecario": {"type": "boolean", "example": True},
+                }
+            },
+            401: None,
+        },
+        tags=["Usuário"],
+    )
+    
+    
     def get(self, request):
         user = request.user
 
@@ -87,7 +177,49 @@ class MeView(APIView):
 class DeletaUsuario(APIView):
 
     permission_classes = [IsAuthenticated]
-    #authentication_classes = [TokenAuthentication]
+    
+    @extend_schema(
+        summary="Deletar usuário",
+        description="Remove um usuário do sistema. Apenas administradores podem executar esta ação.",
+        parameters=[
+            OpenApiParameter(
+                name="user_id",
+                type=int,
+                location=OpenApiParameter.PATH,
+                description="ID do usuário que será deletado"
+            )
+        ],
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "detail": {
+                        "type": "string",
+                        "example": "Usuário excluído com sucesso."
+                    }
+                }
+            },
+            403: {
+                "type": "object",
+                "properties": {
+                    "detail": {
+                        "type": "string",
+                        "example": "Apenas admin podem deletar usuários."
+                    }
+                }
+            },
+            400: {
+                "type": "object",
+                "properties": {
+                    "detail": {
+                        "type": "string",
+                        "example": "Usuário tem empréstimos ativos."
+                    }
+                }
+            },
+        },
+        tags=["Usuários"],
+    )
 
     def delete(self, request, user_id):
         
@@ -110,7 +242,33 @@ class DeletaUsuario(APIView):
 class ListaUsuarios(APIView):
 
     permission_classes = [IsAuthenticated]
-    #authentication_classes = [TokenAuthentication]
+    
+    @extend_schema(
+        summary="Listar usuários",
+        description="Retorna todos os usuários (exceto admin/superuser). Apenas administradores podem acessar.",
+        parameters=[
+            OpenApiParameter(
+                name="q",
+                type=str,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Filtro por email, nome ou sobrenome"
+            )
+        ],
+        responses={
+            200: UserSerializer(many=True),
+            403: {
+                "type": "object",
+                "properties": {
+                    "detail": {
+                        "type": "string",
+                        "example": "Apenas admin podem adicionar livros."
+                    }
+                }
+            }
+        },
+        tags=["Usuários"],
+    )
 
     def get(self, request):
 

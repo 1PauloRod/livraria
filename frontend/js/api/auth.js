@@ -60,7 +60,6 @@ export async function getAllUsers(termo=""){
 }
 
 export async function removeUser(user_id){
-    const token = getToken();
 
     const response = await fetch(`${BASE_URL}/accounts/deletar/${user_id}/`, 
         {
