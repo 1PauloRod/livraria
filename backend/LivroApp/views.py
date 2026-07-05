@@ -2,12 +2,49 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .models import Livro
-from .services import lista_livro, deleta_livro
+from .services import lista_livro, deleta_livro, busca_livro
 from .permissions import isAdmin
 from .serializer import LivroSerializer
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 
 
+class BuscaLivroOpenLibraryView(APIView):
+
+    permission_classes = [IsAuthenticated, isAdmin]
+
+    def get(self, request):
+        
+        q = request.query_params.get("q") 
+        
+        livros = busca_livro(q)
+        
+        return Response(livros)
+    
+    
+class ImportarLivroView(APIView):
+    
+    permission_classes = [IsAuthenticated, isAdmin]
+    
+    def post(self, request):
+        
+        data = request.data
+        
+        livro, created = Livro.objects.get_or_create(
+        isbn=data["isbn"],
+        defaults={
+        "titulo": data["titulo"],
+        "autor": data["autor"],
+        "ano": data["ano"],
+        "editora": data["editora"],
+            }
+        )               
+        
+        return Response({
+            "created": created,
+            "livro": livro.titulo
+        })
+        
+    
 class ListaLivrosView(APIView):
     
     permission_classes = [IsAuthenticated]

@@ -2,7 +2,33 @@ from LivroApp.models import Livro
 from EmprestimoApp.models import Emprestimo
 from django.utils import timezone
 from .serializer import LivroSerializer
+import requests
 
+def busca_livro(q):
+    
+    url = "https://openlibrary.org/search.json"
+
+    response = requests.get(url, params={"q": q}, timeout=10)
+    response.raise_for_status()
+    
+    data = response.json()
+
+    livros = []
+
+    for item in data.get("docs", [])[:10]:
+
+        livros.append({
+            "titulo": item.get("title"),
+            "autores": item.get("author_name", []), 
+            "ano": item.get("first_publish_year"),
+            "isbn": (item.get("isbn") or [None])[0],
+            "editora": item.get("publisher", []),
+            "obra_id": item.get("key"),
+            "capa_id": item.get("cover_i"),
+        })
+
+    return livros
+    
 def lista_livro(q):
     if q:
         livros = Livro.objects.filter(

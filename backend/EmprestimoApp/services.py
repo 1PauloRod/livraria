@@ -41,18 +41,20 @@ def alugar_livro(livro_id, user):
     
     livro = Livro.objects.get(id=livro_id) 
     
-    if not livro:
-        raise Livro.DoesNotExist() 
-    
-    if not livro.disponivel:
+    if livro.quantidade < 1:
         raise ValueError("Livro indisponível")
+    
+    if Emprestimo.objects.filter(livro = livro, 
+                                 user = user, 
+                                 data_devolucao=None).exists():
+        raise ValueError("Usuário já alugou este livro.") 
     
     emprestimo = Emprestimo.objects.create(
         livro=livro,
         user=user
     )
 
-    livro.disponivel = False
+    livro.quantidade-=1
     livro.save()
     
     return emprestimo
@@ -71,7 +73,7 @@ def devolver_livro(emprestimo_id):
     emprestimo.data_devolucao = timezone.now()
     emprestimo.save()
 
-    emprestimo.livro.disponivel = True
+    emprestimo.livro.quantidade += 1
     emprestimo.livro.save()
     
     return emprestimo
