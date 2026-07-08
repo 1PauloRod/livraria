@@ -5,6 +5,8 @@ import { getBooks,
     getRentedBooks, 
     removeBook, 
     updateBook, 
+    getFromOpenLibraryAPI,
+    importBook,
     returnBook } from "../api/books.js";
 import { getAllUsers, removeUser } from "../api/auth.js";
 
@@ -14,6 +16,7 @@ requireAdmin();
 let allBooks = [];
 let allUsers = []; 
 let allRentedBooks = [];
+let booksOptions = [];
 let currentView = 'books';
 
 const logoutBtn = document.getElementById("logout");
@@ -22,11 +25,14 @@ const rentsBtn = document.getElementById("rentsBtn");
 const btnUsers = document.getElementById("btnUsers");
 const btnBooks = document.getElementById("btnBooks");
 const btnSearch = document.getElementById("search");
+const addBook = document.getElementById("btnAddBook");
+const btnSearchBook = document.getElementById("btnSearchBook");
 
 async function fetchBooks(){
     
     try{
         currentView = 'books';
+        btnSearchBook.hidden = true;
         allBooks = await getBooks();
         renderBooks(allBooks);
     }catch(err){
@@ -34,9 +40,35 @@ async function fetchBooks(){
     }
 }
 
+async function fetchSearchAddBook(){
+    try{
+        currentView = 'addBook';
+        btnSearchBook.hidden = false;
+        booksOptions = [];
+        renderAddBooks(booksOptions);
+    }catch(err){
+        console.error("Erro ao buscar livro: ", err);
+    }
+}
+
+async function searchBooks(){
+    const termo = btnSearch.value.trim();
+
+    if (!termo) return; 
+
+    try{
+        booksOptions = await getFromOpenLibraryAPI(termo); 
+    
+    renderAddBooks(booksOptions);
+    } catch(err){
+        console.error(err);
+    }
+}
+
 async function fetchUsers(){
     try{
         currentView = 'users'; 
+        btnSearchBook.hidden = true;
         allUsers = await getAllUsers();
     }catch(err){
         console.error("Erro ao buscar usuário: ", err);
@@ -46,6 +78,7 @@ async function fetchUsers(){
 async function fetchAllRentedBooks(){
     try{
         currentView = 'rents';
+        btnSearchBook.hidden = true;
         allRentedBooks = await getRentedAllBooks();
         console.log(allRentedBooks.data_devolucao);
         renderAllReservedBooks(allRentedBooks);
@@ -57,10 +90,11 @@ async function fetchAllRentedBooks(){
 async function fetchAllUsers(){
     try{
         currentView = 'users';
+        btnSearchBook.hidden = true;
         allUsers = await getAllUsers();
         renderUsers(allUsers);
     }catch(err){
-
+        console.error("Erro ao buscar usuários: ", err); 
     }
 }
 
@@ -83,8 +117,18 @@ function renderEditBook(div, book){
     yearInput.type = "number";
     yearInput.value = book.ano;
 
+    const publisherInput = document.createElement("input"); 
+    publisherInput.value = book.editora;
+
+    const isbnInput = document.createElement("input");
+    isbnInput.value = book.isbn;
+
+    const totalInput = document.createElement("input");
+    totalInput.type = "number"; 
+    totalInput.value = book.quantidade;
+
     const saveBtn = document.createElement("button");
-    saveBtn.textContent = "Salvar";
+    saveBtn.textContent = "Salvar"; 
 
     const cancelBtn = document.createElement("button");
     cancelBtn.textContent = "Cancelar";
@@ -95,7 +139,11 @@ function renderEditBook(div, book){
             await updateBook(book.id, {
                 titulo: titleInput.value,
                 autor: authorInput.value,
-                ano: yearInput.value
+                ano: yearInput.value, 
+                editora: publisherInput.value, 
+                isbn: isbnInput.value, 
+                quantidade: totalInput.value
+
             });
 
             await fetchBooks();
@@ -113,6 +161,10 @@ function renderEditBook(div, book){
     div.appendChild(titleInput);
     div.appendChild(authorInput);
     div.appendChild(yearInput);
+    div.appendChild(publisherInput);
+    div.appendChild(isbnInput);
+    div.appendChild(totalInput);
+    
     const actions = document.createElement("div");
     actions.classList.add("actions");
 
@@ -129,14 +181,14 @@ function renderBooks(books){
         const div = document.createElement("div");
         div.classList.add("book-item");
 
-        if (!book.disponivel) {
+        if (!book.quantidade > 0) {
             div.classList.add("book-unavailable");
         }
 
         const p = document.createElement("p");
         p.textContent = `${book.autor} - ${book.titulo} (${book.ano})`;
 
-        if (book.disponivel) {
+        if (book.quantidade > 0) {
             const btnRemove = document.createElement("button");
             const btnUpdate = document.createElement("button");
             btnRemove.textContent = "Excluir";
@@ -177,6 +229,51 @@ function renderBooks(books){
 async function removeUserOnClick(user_id){
     await removeUser(user_id);
     await fetchAllUsers();
+}
+
+function renderAddBooks(books){
+    container.innerHTML = "";
+
+    books.forEach((book) => {
+        const div = document.createElement("div");
+        div.classList.add("book-item");
+
+        const p = document.createElement("p");
+        p.textContent = `${book.autores} - ${book.titulo} (${book.ano})`;
+
+        const btnAdd = document.createElement("button");
+        btnAdd.textContent = "Adicionar";
+        btnAdd.classList.add("btn-save");
+
+        btnAdd.addEventListener("click", async () => {
+            try {
+                const response = await importBook(book);
+
+                console.log(response);
+
+                if (response.created) {
+                    alert("Livro adicionado com sucesso!");
+       
+                } else {
+                alert("Esse livro já existe.");
+            }
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao adicionar livro.");
+            }
+        });
+
+        // Container dos botoes
+        const actions = document.createElement("div");
+        actions.classList.add("book-actions");
+
+        actions.appendChild(btnAdd);
+
+        div.appendChild(p);
+        div.appendChild(actions);
+
+        container.appendChild(div);
+    });
 }
 
 function renderUsers(users){
@@ -288,6 +385,12 @@ function renderHome(){
         fetchBooks();
     });
 
+    btnAddBook.addEventListener("click", () => {
+        fetchSearchAddBook();
+    });
+
+    btnSearchBook.addEventListener("click", searchBooks);
+
     btnUsers.addEventListener("click", () => {
         fetchAllUsers();
     });
@@ -311,6 +414,12 @@ btnSearch.addEventListener("input", (e) => {
         book.autor.toLowerCase().includes(termo))
 
         renderBooks(filter);
+    }
+
+    else if (currentView === 'addBook'){
+        const filter = booksOptions.filter((book) => 
+        book.titulo.toLowerCase().includes(termo))
+        renderAddBooks(filter);
     }
 
     else if (currentView === 'users'){

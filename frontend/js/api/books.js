@@ -17,6 +17,34 @@ export async function getBooks(termo=""){
     return response.json();
 }
 
+export async function getFromOpenLibraryAPI(termo=""){
+    const response = await fetch(`${BASE_URL}/livro/buscar_livro/?q=${encodeURIComponent(termo)}`, 
+        {
+            method: "GET",
+            headers: getAuthHeaders(),    
+        }
+
+    )
+
+    if (!response.ok){
+        throw Error("Erro ao buscar livro");
+    }
+
+    return response.json();
+}
+
+export async function importBook(book){
+    const response = await fetch(`${BASE_URL}/livro/importar/`, {
+        method: "POST", 
+        headers: getAuthHeaders(), 
+        body: JSON.stringify(book)        
+    }); 
+
+    if (!response.ok) throw new Error("Erro ao importar livro");
+
+    return response.json();
+}
+
 export async function getRentedBooks(termo=""){
     const response = await fetch(`${BASE_URL}/emprestimo/listar/?q=${encodeURIComponent(termo)}`, 
         {  

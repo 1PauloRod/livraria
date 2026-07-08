@@ -19,13 +19,13 @@ def busca_livro(q):
 
         livros.append({
             "titulo": item.get("title"),
-            "autores": item.get("author_name", []), 
+            "autores": ", ".join(item.get("author_name", [])),
             "ano": item.get("first_publish_year"),
-            "isbn": (item.get("isbn") or [None])[0],
-            "editora": item.get("publisher", []),
+            "editora": ", ".join(item.get("publisher", [])),
             "obra_id": item.get("key"),
             "capa_id": item.get("cover_i"),
         })
+        
 
     return livros
     

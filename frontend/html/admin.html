@@ -13,21 +13,25 @@
         <button id="logout">Logout</button>
         <nav>
             <ul>
+                <li><button id="btnAddBook">Adicionar Livro</li>
                 <li><button id="btnBooks">Livros</button></li>
                 <li><button id="btnUsers">Usuários</button></li>
                 <li><button id="rentsBtn">Empréstimos</button></li>
             </ul>
 
-            <div class="books-card">
-            <input
-                type="text"
-                id="search"
-                placeholder="Buscar livro..."
-            />    
-            
-            <div id="books"></div>
+            <div id="books-card">
+    <div class="search-container">
+        <input
+            type="text"
+            id="search"
+            placeholder="Buscar livro..."
+        />
 
-            </div>
+        <button id="btnSearchBook" hidden>Buscar</button>
+    </div>
+
+    <div id="books"></div>
+</div>
 
         </nav>
     </div>

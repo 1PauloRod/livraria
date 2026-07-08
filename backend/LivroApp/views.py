@@ -16,6 +16,8 @@ class BuscaLivroOpenLibraryView(APIView):
         
         q = request.query_params.get("q") 
         
+        print("q =", q)
+        
         livros = busca_livro(q)
         
         return Response(livros)
@@ -30,10 +32,10 @@ class ImportarLivroView(APIView):
         data = request.data
         
         livro, created = Livro.objects.get_or_create(
-        isbn=data["isbn"],
+        obra_id=data["obra_id"],
         defaults={
         "titulo": data["titulo"],
-        "autor": data["autor"],
+        "autor": data["autores"],
         "ano": data["ano"],
         "editora": data["editora"],
             }
@@ -43,6 +45,7 @@ class ImportarLivroView(APIView):
             "created": created,
             "livro": livro.titulo
         })
+        
         
     
 class ListaLivrosView(APIView):
