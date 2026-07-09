@@ -2,44 +2,127 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .models import Livro
-from .services import lista_livro, deleta_livro, busca_livro
+from .services import lista_livro, deleta_livro, busca_livro, importar_livro
 from .permissions import isAdmin
 from .serializer import LivroSerializer
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
-
+from .exceptions import BookNotFoundError
+from rest_framework.exceptions import ValidationError
 
 class BuscaLivroOpenLibraryView(APIView):
 
     permission_classes = [IsAuthenticated, isAdmin]
+    
+    @extend_schema(
+    summary="Buscar livros na OpenLibrary",
+    description="""
+    Realiza uma busca de livros na API da OpenLibrary.
+
+    Utilize o parâmetro `q` para informar o termo desejado (título, autor ou ISBN).
+    Retorna uma lista de livros encontrados, mas **não os adiciona ao banco de dados**.
+    """,
+    parameters=[
+        OpenApiParameter(
+            name="q",
+            type=str,
+            location=OpenApiParameter.QUERY,
+            required=True,
+            description="Termo utilizado na busca da OpenLibrary"
+        )
+    ],
+    responses={
+        200: OpenApiResponse(
+            description="Lista de livros encontrados."
+        ),
+        400: OpenApiResponse(
+            description="Erro ao consultar a OpenLibrary."
+        ),
+        401: None,
+        403: None,
+    },
+    tags=["Livros"],
+)
 
     def get(self, request):
         
-        q = request.query_params.get("q") 
+        try:
+            q = request.query_params.get("q")     
+            livros = busca_livro(q)
         
-        print("q =", q)
+            return Response(livros)
+    
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, 
+                status=400
+            )
         
-        livros = busca_livro(q)
-        
-        return Response(livros)
     
     
 class ImportarLivroView(APIView):
     
     permission_classes = [IsAuthenticated, isAdmin]
     
+    @extend_schema(
+    summary="Importar livro da OpenLibrary",
+    description="""
+    Importa um livro pesquisado na OpenLibrary para o banco de dados.
+
+    Caso o livro já exista (mesmo `obra_id`), ele não será duplicado.
+    """,
+    request={
+        "application/json": {
+            "type": "object",
+            "properties": {
+                "obra_id": {
+                    "type": "string",
+                    "example": "OL27448W"
+                },
+                "titulo": {
+                    "type": "string",
+                    "example": "Clean Code"
+                },
+                "autores": {
+                    "type": "string",
+                    "example": "Robert C. Martin"
+                },
+                "ano": {
+                    "type": "integer",
+                    "example": 2008
+                },
+                "editora": {
+                    "type": "string",
+                    "example": "Prentice Hall"
+                }
+            },
+            "required": [
+                "obra_id",
+                "titulo",
+                "autores"
+            ]
+        }
+    },
+    responses={
+        201: OpenApiResponse(
+            description="Livro importado com sucesso."
+        ),
+        200: OpenApiResponse(
+            description="Livro já existia no banco."
+        ),
+        400: OpenApiResponse(
+            description="Dados inválidos."
+        ),
+        401: None,
+        403: None,
+    },
+    tags=["Livros"],
+)
+    
     def post(self, request):
         
         data = request.data
         
-        livro, created = Livro.objects.get_or_create(
-        obra_id=data["obra_id"],
-        defaults={
-        "titulo": data["titulo"],
-        "autor": data["autores"],
-        "ano": data["ano"],
-        "editora": data["editora"],
-            }
-        )               
+        livro, created = importar_livro(data)              
         
         return Response({
             "created": created,
@@ -130,12 +213,17 @@ class DeletarLivro(APIView):
         try:
             livro = deleta_livro(livro_id, request.user)
         
-        except Livro.DoesNotExist:
-            return Response({"detail": "Livro não encontrado."}, status=404)
+            return Response(
+                {"detail": f"{livro.titulo} removido."},
+                status=200)
         
-        return Response({"detail": f"{livro.titulo} removido."}, status=200)
         
-
+        except BookNotFoundError as e:
+            return Response(
+                {"detail": "Livro não encontrado."},
+                status=404)
+        
+        
 
 class AdicionarLivroView(APIView):
     
@@ -167,6 +255,12 @@ class AdicionarLivroView(APIView):
         except Exception as e:
             return Response(
                 {"error": str(e)},
+                status=400
+            )
+            
+        except ValidationError as e:
+            return Response(
+                e.detail, 
                 status=400
             )
 
@@ -214,11 +308,18 @@ class AtualizarLivroView(APIView):
                 "livro": serializer.data
             }, status=202)
 
-        except Livro.DoesNotExist:
+        except BookNotFoundError:
 
             return Response({
                 "detail": "Livro não encontrado."
             }, status=404)
+            
+        except ValidationError as e:
+            return Response(
+                e.detail, 
+                status=400
+            )
+            
              
         
     

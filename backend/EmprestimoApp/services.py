@@ -5,6 +5,7 @@ from .models import Emprestimo
 from .serializer import EmprestimoSerializer
 from UserApp.models import User
 from  django.utils import timezone
+from LivroApp.exceptions import BookUnavailableError, BookAlreadyReturnedError
 
 def lista_emprestimo(q, user):
     if q:
@@ -42,12 +43,12 @@ def alugar_livro(livro_id, user):
     livro = Livro.objects.get(id=livro_id) 
     
     if livro.quantidade < 1:
-        raise ValueError("Livro indisponível")
+        raise BookUnavailableError("Livro indisponível.")
     
     if Emprestimo.objects.filter(livro = livro, 
                                  user = user, 
                                  data_devolucao=None).exists():
-        raise ValueError("Usuário já alugou este livro.") 
+        raise BookUnavailableError("Usuário já alugou este livro.") 
     
     emprestimo = Emprestimo.objects.create(
         livro=livro,
@@ -68,7 +69,7 @@ def devolver_livro(emprestimo_id):
         raise Emprestimo.DoesNotExist() 
     
     if emprestimo.data_devolucao:
-        ValueError("Livro já devolvido.")
+        raise BookAlreadyReturnedError("Livro já devolvido.")
         
     emprestimo.data_devolucao = timezone.now()
     emprestimo.save()

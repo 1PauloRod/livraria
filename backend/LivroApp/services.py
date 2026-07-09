@@ -3,6 +3,7 @@ from EmprestimoApp.models import Emprestimo
 from django.utils import timezone
 from .serializer import LivroSerializer
 import requests
+from .exceptions import BookNotFoundError
 
 def busca_livro(q):
     
@@ -28,6 +29,19 @@ def busca_livro(q):
         
 
     return livros
+
+def importar_livro(data):
+    livro, created = Livro.objects.get_or_create(
+        obra_id=data["obra_id"],
+        defaults={
+        "titulo": data["titulo"],
+        "autor": data["autores"],
+        "ano": data["ano"],
+        "editora": data["editora"],
+            }
+    )      
+    
+    return livro, created         
     
 def lista_livro(q):
     if q:
@@ -43,19 +57,20 @@ def lista_livro(q):
 
 def deleta_livro(livro_id, user):
 
-    try:
-        livro = Livro.objects.get(id=livro_id)
-    except Livro.DoesNotExist:
-        raise Livro.DoesNotExist("Livro não encontrado.") 
-    
-    emprestimo_ativo = Emprestimo.objects.filter(
-                                            livro=livro, 
-                                            user=user
-                                        )
-    if emprestimo_ativo:
-            emprestimo_ativo.data_devolucao = timezone.now()
-            emprestimo_ativo.save()
-        
+    livro = Livro.objects.filter(id=livro_id).first()
+
+    if not livro:
+        raise BookNotFoundError("Livro não encontrado.")
+
+    emprestimo = Emprestimo.objects.filter(
+        livro=livro,
+        data_devolucao__isnull=True
+    ).first()
+
+    if emprestimo:
+        emprestimo.data_devolucao = timezone.now()
+        emprestimo.save()
+
     livro.delete()
 
     return livro
