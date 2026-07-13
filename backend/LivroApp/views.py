@@ -6,7 +6,7 @@ from .services import lista_livro, deleta_livro, busca_livro, importar_livro
 from .permissions import isAdmin
 from .serializer import LivroSerializer
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
-from .exceptions import BookNotFoundError
+from .exceptions import BookNotFoundError, ActivateBookLoan
 from rest_framework.exceptions import ValidationError
 
 class BuscaLivroOpenLibraryView(APIView):
@@ -122,11 +122,13 @@ class ImportarLivroView(APIView):
         
         data = request.data
         
-        livro, created = importar_livro(data)              
+        livro, created = importar_livro(data)   
+        
+        serializer = LivroSerializer(livro)           
         
         return Response({
             "created": created,
-            "livro": livro.titulo
+            "livro": serializer.data
         })
         
         
@@ -162,12 +164,12 @@ class ListaLivrosView(APIView):
         
         q = request.query_params.get("q", "") 
 
-        livros = lista_livro(q)  
+        livros = lista_livro(q, request.user)  
         
-        serializer = LivroSerializer(livros, many=True)
+        #serializer = LivroSerializer(livros, many=True) nem preciso, ja to retornando um json
         
-        return Response(serializer.data)
-    
+        return Response(livros)
+       
 
 class DeletarLivro(APIView):
 
@@ -222,6 +224,12 @@ class DeletarLivro(APIView):
             return Response(
                 {"detail": "Livro não encontrado."},
                 status=404)
+            
+        except ActivateBookLoan as e:
+            return Response(
+                {"detail": "Livro com empréstimo ativo."}, 
+                 status=409
+            )
         
         
 

@@ -91,10 +91,14 @@ export async function removeBook(book_id){
     });
 
     if (!response.ok) {
-        throw new Error("Erro ao remover livro");
+        const error = await response.json();
+        throw{
+            status: response.status, 
+            message: error.detail
+        };
     }
 
-    return response;
+    return response.json();
 }
 
 export async function updateBook(book_id, data){

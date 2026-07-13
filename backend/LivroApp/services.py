@@ -3,7 +3,7 @@ from EmprestimoApp.models import Emprestimo
 from django.utils import timezone
 from .serializer import LivroSerializer
 import requests
-from .exceptions import BookNotFoundError
+from .exceptions import BookNotFoundError, ActivateBookLoan
 
 def busca_livro(q):
     
@@ -17,15 +17,16 @@ def busca_livro(q):
     livros = []
 
     for item in data.get("docs", [])[:10]:
-
-        livros.append({
-            "titulo": item.get("title"),
-            "autores": ", ".join(item.get("author_name", [])),
-            "ano": item.get("first_publish_year"),
-            "editora": ", ".join(item.get("publisher", [])),
-            "obra_id": item.get("key"),
-            "capa_id": item.get("cover_i"),
-        })
+        obra = item.get("ia")
+        if obra is not None: #vou deixar assim por enquanto
+            livros.append({
+                "titulo": item.get("title"),
+                "autores": ", ".join(item.get("author_name", [])),
+                "ano": item.get("first_publish_year"),
+                "editora": ", ".join(item.get("publisher", [])),
+                "obra_id": [] if obra is None else obra[0],
+                "capa_id": item.get("cover_i"),
+            })
         
 
     return livros
@@ -38,12 +39,14 @@ def importar_livro(data):
         "autor": data["autores"],
         "ano": data["ano"],
         "editora": data["editora"],
+        "obra_id": data["obra_id"], 
+        "quantidade": 1
             }
     )      
     
     return livro, created         
     
-def lista_livro(q):
+def lista_livro(q, user):
     if q:
         livros = Livro.objects.filter(
                 titulo__icontains=q
@@ -52,8 +55,27 @@ def lista_livro(q):
         )
     else:
         livros = Livro.objects.all()
+        
+    resultado = []     
+    
+    for livro in livros:
+        usuario_possui = Emprestimo.objects.filter(
+            livro=livro, 
+            user=user,
+            data_devolucao__isnull=True
+        ).exists()
+        
+        resultado.append({
+            "id": livro.id,
+            "titulo": livro.titulo,
+            "autor": livro.autor,
+            "ano": livro.ano,
+            "obra_id": livro.obra_id, 
+            "estoque": livro.quantidade,
+            "usuario_possui": usuario_possui,
+        })
 
-    return livros
+    return resultado
 
 def deleta_livro(livro_id, user):
 
@@ -68,8 +90,9 @@ def deleta_livro(livro_id, user):
     ).first()
 
     if emprestimo:
-        emprestimo.data_devolucao = timezone.now()
-        emprestimo.save()
+        raise ActivateBookLoan("Livro com empréstimo ativo.")
+        #emprestimo.data_devolucao = timezone.now()
+        #emprestimo.save()
 
     livro.delete()
 

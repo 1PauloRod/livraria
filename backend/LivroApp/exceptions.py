@@ -5,11 +5,11 @@ class BookError(Exception):
 class BookNotFoundError(BookError):
     pass
         
-        
 class BookUnavailableError(BookError):
     pass
-
 
 class BookAlreadyReturnedError(BookError):
     pass
 
+class ActivateBookLoan(BookError):
+    pass

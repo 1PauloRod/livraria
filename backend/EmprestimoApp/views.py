@@ -8,6 +8,7 @@ from .serializer import EmprestimoSerializer
 from .permissions import isAdmin, isNotAdmin
 from .services import lista_emprestimo, lista_todos_emprestimos, alugar_livro, devolver_livro
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
+from LivroApp.exceptions import BookUnavailableError, BookAlreadyReturnedError
 
 
 class ListaEmprestimo(APIView):
@@ -166,7 +167,7 @@ class AlugarLivroView(APIView):
                 "error": "Livro não existe."
             }, status=404)
 
-        except ValueError as e:
+        except BookUnavailableError as e:
 
             return Response({
                 "error": str(e)

@@ -46,37 +46,45 @@ function rentBookOnClick(book_id){
     fetchBooks();
 }
  
-function renderBooks(books){
+function renderBooks(books) {
     container.innerHTML = "";
 
     books.forEach((book) => {
         const div = document.createElement("div");
         div.classList.add("book-item");
 
-        if (!book.disponivel) {
+        if (book.estoque === 0) {
             div.classList.add("book-unavailable");
         }
 
         const p = document.createElement("p");
         p.textContent = `${book.autor} - ${book.titulo} (${book.ano})`;
 
-        if (book.disponivel) {
-            const btn = document.createElement("button");
+        const btn = document.createElement("button");
+
+        if (book.usuario_possui) {
+
+            btn.textContent = "Alugado";
+            btn.disabled = true;
+            btn.classList.add("btn-disabled");
+
+        } else if (book.estoque === 0) {
+
+            btn.textContent = "Indisponível";
+            btn.disabled = true;
+            btn.classList.add("btn-disabled");
+
+        } else {
+
             btn.textContent = "Alugar";
+
             btn.addEventListener("click", () => {
                 rentBookOnClick(book.id);
             });
-
-            div.appendChild(p);
-            div.appendChild(btn);
-
-        } else {
-            const span = document.createElement("span");
-            span.textContent = "Indisponível";
-
-            div.appendChild(p);
-            div.appendChild(span);
         }
+
+        div.appendChild(p);
+        div.appendChild(btn);
 
         container.appendChild(div);
     });

@@ -99,8 +99,14 @@ async function fetchAllUsers(){
 }
 
 async function removeBookOnClick(book_id){
-    await removeBook(book_id);
-    await fetchBooks();
+    try{
+        await removeBook(book_id);
+        await fetchBooks();
+        alert("Livro removido com sucesso."); 
+    } catch(err){
+        alert(err.message);
+        console.error(err);
+    }
 }
 
 function renderEditBook(div, book){
@@ -120,12 +126,12 @@ function renderEditBook(div, book){
     const publisherInput = document.createElement("input"); 
     publisherInput.value = book.editora;
 
-    const isbnInput = document.createElement("input");
-    isbnInput.value = book.isbn;
+    const obraIdInput = document.createElement("input");
+    obraIdInput.value = book.obra_id;
 
     const totalInput = document.createElement("input");
     totalInput.type = "number"; 
-    totalInput.value = book.quantidade;
+    totalInput.value = book.estoque;
 
     const saveBtn = document.createElement("button");
     saveBtn.textContent = "Salvar"; 
@@ -141,7 +147,7 @@ function renderEditBook(div, book){
                 autor: authorInput.value,
                 ano: yearInput.value, 
                 editora: publisherInput.value, 
-                isbn: isbnInput.value, 
+                obra_id: obraIdInput.value, 
                 quantidade: totalInput.value
 
             });
@@ -149,7 +155,7 @@ function renderEditBook(div, book){
             await fetchBooks();
 
         }catch(err){
-            console.error(err);
+          
         }
 
     });
@@ -162,7 +168,7 @@ function renderEditBook(div, book){
     div.appendChild(authorInput);
     div.appendChild(yearInput);
     div.appendChild(publisherInput);
-    div.appendChild(isbnInput);
+    div.appendChild(obraIdInput);
     div.appendChild(totalInput);
     
     const actions = document.createElement("div");
@@ -174,53 +180,54 @@ function renderEditBook(div, book){
     div.appendChild(actions);
 }
 
-function renderBooks(books){
+function renderBooks(books) {
     container.innerHTML = "";
 
     books.forEach((book) => {
+
         const div = document.createElement("div");
         div.classList.add("book-item");
 
-        if (!book.quantidade > 0) {
+        if (book.estoque === 0) {
             div.classList.add("book-unavailable");
         }
 
         const p = document.createElement("p");
         p.textContent = `${book.autor} - ${book.titulo} (${book.ano})`;
 
-        if (book.quantidade > 0) {
-            const btnRemove = document.createElement("button");
-            const btnUpdate = document.createElement("button");
-            btnRemove.textContent = "Excluir";
-            btnUpdate.textContent = "Editar";
-            btnRemove.addEventListener("click", () => {
-                removeBookOnClick(book.id);
-            });
+        const actions = document.createElement("div");
+        actions.classList.add("book-actions");
 
-            btnUpdate.addEventListener("click", () => {
-                renderEditBook(div, book);
+        // Botão Editar (sempre aparece)
+        const btnUpdate = document.createElement("button");
+        btnUpdate.textContent = "Editar";
 
-            });
+        btnUpdate.addEventListener("click", () => {
+            console.log(book);
+            renderEditBook(div, book);
+        });
 
-            const actions = document.createElement("div");
-            actions.classList.add("book-actions");
+        // Botão Excluir
+        const btnRemove = document.createElement("button");
+        btnRemove.textContent = "Excluir";
+        btnRemove.classList.add("btn-delete");
 
-            btnRemove.classList.add("btn-delete");
-            btnUpdate.classList.add("btn-edit");
+        btnRemove.addEventListener("click", () => {
+            removeBookOnClick(book.id);
+        });
 
-            actions.appendChild(btnRemove);
-            actions.appendChild(btnUpdate);
+        actions.appendChild(btnRemove);
+        actions.appendChild(btnUpdate);
 
-            div.appendChild(p);
-            div.appendChild(actions);
+        div.appendChild(p);
 
-        } else {
+        if (book.estoque === 0) {
             const span = document.createElement("span");
-            span.textContent = "Alugado";
-
-            div.appendChild(p);
+            span.textContent = "Indisponível";
             div.appendChild(span);
         }
+
+        div.appendChild(actions);
 
         container.appendChild(div);
     });
@@ -249,7 +256,7 @@ function renderAddBooks(books){
             try {
                 const response = await importBook(book);
 
-                console.log(response);
+                console.log(book); 
 
                 if (response.created) {
                     alert("Livro adicionado com sucesso!");
