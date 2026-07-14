@@ -1,9 +1,9 @@
 import { BASE_URL } from "../api/config.js"
 import { getAuthHeaders } from "../api/config.js"
 
-export async function getBooks(termo=""){
+export async function getBooks(page=1, termo=""){
 
-    const response = await fetch(`${BASE_URL}/livro/listar/?q=${encodeURIComponent(termo)}`, 
+    const response = await fetch(`${BASE_URL}/livro/listar/?page=${page}&q=${encodeURIComponent(termo)}`, 
         {
             method: "GET",
             headers: getAuthHeaders(), 

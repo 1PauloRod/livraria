@@ -6,7 +6,7 @@ class Livro(models.Model):
     ano = models.PositiveIntegerField(null=True, blank=True) 
     editora = models.CharField(max_length=150, null=True, blank=True)
     obra_id = models.CharField(max_length=50, unique=True)
-    disponivel = models.BooleanField(default=True)
+    #disponivel = models.BooleanField(default=True)
 
     quantidade = models.PositiveIntegerField(default=1)
 

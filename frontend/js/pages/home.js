@@ -7,7 +7,9 @@ requireUser();
 const title = document.querySelector("h1");
 const user = JSON.parse(localStorage.getItem("user"));
 title.textContent = `Olá, ${user.name}`
-   
+
+let currentPage = 1;
+let totalPages = 1;
 
 let allBooks = [];
 let allRentedBooks = [];
@@ -18,13 +20,30 @@ const searchInput = document.getElementById("search");
 const logoutBtn = document.getElementById("logout");
 const renderRentBooksBtn = document.getElementById("rent-books");
 const renderMyReservedBooksBtn = document.getElementById("reserved-books");
+const btnPrev = document.getElementById("prev-page");
+const btnNext = document.getElementById("next-page");
+const pageInfo = document.getElementById("page-info");
 
-async function fetchBooks() {
+
+function updatePagination(data){
+
+    pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
+
+    btnPrev.disabled = !data.previous;
+    btnNext.disabled = !data.next;
+}
+
+async function fetchBooks(page=1){
     try{
         currentView = 'books';
-        allBooks = await getBooks();
-        renderBooks(allBooks);
-        console.log(allBooks);
+        btnNext.hidden = false;
+        btnPrev.hidden = false;
+        pageInfo.hidden = false;
+        currentPage = page;
+        const response = await getBooks(page, searchInput.value.trim());
+        totalPages = Math.ceil(response.count / 50);
+        renderBooks(response.results);
+        updatePagination(response);
     }catch(err){
         console.error("Erro ao buscar livros: ", err);
     }
@@ -33,6 +52,9 @@ async function fetchBooks() {
 async function fetchMyRentedBooks(){
     try{
         currentView = 'rented';
+        btnNext.hidden = false;
+        btnPrev.hidden = false;
+        pageInfo.hidden = false;
         allRentedBooks = await getRentedBooks();
         console.log(allRentedBooks.data_devolucao);
         renderMyReservedBooks(allRentedBooks);
@@ -43,7 +65,7 @@ async function fetchMyRentedBooks(){
 
 function rentBookOnClick(book_id){
     rentBooks(book_id);
-    fetchBooks();
+    fetchBooks(1);
 }
  
 function renderBooks(books) {
@@ -125,26 +147,37 @@ function renderMyReservedBooks(rentedBooks){
 function renderHome(){
     container.innerHTML = "";
 
-    fetchBooks();
+    fetchBooks(1);
 
     renderRentBooksBtn.addEventListener("click", ()=> {
-       fetchBooks();
+       fetchBooks(1);
     }); 
 
     renderMyReservedBooksBtn.addEventListener("click", () => {
         fetchMyRentedBooks();
     }); 
+
+    btnNext.addEventListener("click", () => {
+
+    if(currentPage < totalPages){
+        fetchBooks(currentPage + 1);
+    }
+
+    });
+
+    btnPrev.addEventListener("click", () => {
+
+    if(currentPage > 1){
+        fetchBooks(currentPage - 1);
+    }
+
+    });
 }
 
 searchInput.addEventListener("input", (e)=>{
-    const termo = e.target.value.toLowerCase();
     
     if (currentView === 'books'){
-        const filters = allBooks.filter((livro) => 
-        livro.titulo.toLowerCase().includes(termo) || 
-        livro.autor.toLowerCase().includes(termo));
-
-        renderBooks(filters);
+        fetchBooks(1);
 
     }else if (currentView === 'rented'){
        const filters = allRentedBooks.filter((rentedBook) => 

@@ -28,7 +28,6 @@ def busca_livro(q):
                 "capa_id": item.get("cover_i"),
             })
         
-
     return livros
 
 def importar_livro(data):
@@ -70,6 +69,7 @@ def lista_livro(q, user):
             "titulo": livro.titulo,
             "autor": livro.autor,
             "ano": livro.ano,
+            "editora": livro.editora,
             "obra_id": livro.obra_id, 
             "estoque": livro.quantidade,
             "usuario_possui": usuario_possui,

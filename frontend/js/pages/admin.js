@@ -13,7 +13,9 @@ import { getAllUsers, removeUser } from "../api/auth.js";
 requiredeAuth();
 requireAdmin();
 
-let allBooks = [];
+let currentPage = 1;
+let totalPages = 1;
+
 let allUsers = []; 
 let allRentedBooks = [];
 let booksOptions = [];
@@ -27,14 +29,31 @@ const btnBooks = document.getElementById("btnBooks");
 const btnSearch = document.getElementById("search");
 const addBook = document.getElementById("btnAddBook");
 const btnSearchBook = document.getElementById("btnSearchBook");
+const btnPrev = document.getElementById("prev-page");
+const btnNext = document.getElementById("next-page");
+const pageInfo = document.getElementById("page-info");
 
-async function fetchBooks(){
-    
+
+function updatePagination(data){
+
+    pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
+
+    btnPrev.disabled = !data.previous;
+    btnNext.disabled = !data.next;
+}
+
+async function fetchBooks(page=1){
     try{
         currentView = 'books';
+        btnNext.hidden = false;
+        btnPrev.hidden = false;
+        pageInfo.hidden = false;
         btnSearchBook.hidden = true;
-        allBooks = await getBooks();
-        renderBooks(allBooks);
+        currentPage = page;
+        const response = await getBooks(page, btnSearch.value.trim());
+        totalPages = Math.ceil(response.count / 50);
+        renderBooks(response.results);
+        updatePagination(response);
     }catch(err){
         console.error("Erro ao buscar livros: ", err);
     }
@@ -43,6 +62,9 @@ async function fetchBooks(){
 async function fetchSearchAddBook(){
     try{
         currentView = 'addBook';
+        btnNext.hidden = true;
+        btnPrev.hidden = true;
+        pageInfo.hidden = true;
         btnSearchBook.hidden = false;
         booksOptions = [];
         renderAddBooks(booksOptions);
@@ -68,6 +90,9 @@ async function searchBooks(){
 async function fetchUsers(){
     try{
         currentView = 'users'; 
+        btnNext.hidden = true;
+        btnPrev.hidden = true;
+        pageInfo.hidden = true;
         btnSearchBook.hidden = true;
         allUsers = await getAllUsers();
     }catch(err){
@@ -78,6 +103,9 @@ async function fetchUsers(){
 async function fetchAllRentedBooks(){
     try{
         currentView = 'rents';
+        btnNext.hidden = true;
+        btnPrev.hidden = true;
+        pageInfo.hidden = true;
         btnSearchBook.hidden = true;
         allRentedBooks = await getRentedAllBooks();
         console.log(allRentedBooks.data_devolucao);
@@ -90,6 +118,9 @@ async function fetchAllRentedBooks(){
 async function fetchAllUsers(){
     try{
         currentView = 'users';
+        btnNext.hidden = true;
+        btnPrev.hidden = true;
+        pageInfo.hidden = true;
         btnSearchBook.hidden = true;
         allUsers = await getAllUsers();
         renderUsers(allUsers);
@@ -101,7 +132,7 @@ async function fetchAllUsers(){
 async function removeBookOnClick(book_id){
     try{
         await removeBook(book_id);
-        await fetchBooks();
+        await fetchBooks(currentPage);
         alert("Livro removido com sucesso."); 
     } catch(err){
         alert(err.message);
@@ -152,7 +183,7 @@ function renderEditBook(div, book){
 
             });
 
-            await fetchBooks();
+            await fetchBooks(currentPage);
 
         }catch(err){
           
@@ -161,7 +192,7 @@ function renderEditBook(div, book){
     });
 
     cancelBtn.addEventListener("click", () => {
-        fetchBooks();
+        fetchBooks(currentPage);
     });
 
     div.appendChild(titleInput);
@@ -386,10 +417,10 @@ function renderAllReservedBooks(rentedBooks){
 
 function renderHome(){
     container.innerHTML = "";
-    fetchBooks();
+    fetchBooks(currentPage);
     
     btnBooks.addEventListener("click", () => {
-        fetchBooks();
+        fetchBooks(currentPage);
     });
 
     btnAddBook.addEventListener("click", () => {
@@ -405,6 +436,22 @@ function renderHome(){
     rentsBtn.addEventListener("click", () => {
         fetchAllRentedBooks();
     });
+
+    btnNext.addEventListener("click", () => {
+
+    if(currentPage < totalPages){
+        fetchBooks(currentPage + 1);
+    }
+
+    });
+
+    btnPrev.addEventListener("click", () => {
+
+    if(currentPage > 1){
+        fetchBooks(currentPage - 1);
+    }
+
+    });
 }
 
 logoutBtn.addEventListener('click', (e)=>{
@@ -413,14 +460,10 @@ logoutBtn.addEventListener('click', (e)=>{
 
 
 btnSearch.addEventListener("input", (e) => {
-    const termo = e.target.value.toLowerCase();
 
     if (currentView === 'books'){
-        const filter = allBooks.filter((book) => 
-        book.titulo.toLowerCase().includes(termo) ||
-        book.autor.toLowerCase().includes(termo))
 
-        renderBooks(filter);
+        fetchBooks(1); 
     }
 
     else if (currentView === 'addBook'){

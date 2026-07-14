@@ -8,6 +8,7 @@ from .serializer import LivroSerializer
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 from .exceptions import BookNotFoundError, ActivateBookLoan
 from rest_framework.exceptions import ValidationError
+from .pagination import DefaultPagination
 
 class BuscaLivroOpenLibraryView(APIView):
 
@@ -166,9 +167,16 @@ class ListaLivrosView(APIView):
 
         livros = lista_livro(q, request.user)  
         
-        #serializer = LivroSerializer(livros, many=True) nem preciso, ja to retornando um json
+        paginator = DefaultPagination()
         
-        return Response(livros)
+        page = paginator.paginate_queryset(
+            livros, 
+            request
+        )
+        
+        serializer = LivroSerializer(page, many=True)
+        
+        return paginator.get_paginated_response(serializer.data)
        
 
 class DeletarLivro(APIView):
