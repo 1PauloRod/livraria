@@ -6,6 +6,7 @@ from .serializer import EmprestimoSerializer
 from UserApp.models import User
 from  django.utils import timezone
 from LivroApp.exceptions import BookUnavailableError, BookAlreadyReturnedError
+from django.db.models import Q
 
 def lista_emprestimo(q, user):
     if q:
@@ -25,17 +26,23 @@ def lista_emprestimo(q, user):
     return emprestimos
 
 
-def lista_todos_emprestimos(q):
+def lista_todos_emprestimos(q=""):
+    
+    emprestimos = (
+        Emprestimo.objects
+        .select_related("user", "livro")
+        .order_by("-data_emprestimo")
+    )
+    
     if q:
-        usuario = User.objects.filter(
-            email__icontains = q
+        emprestimos = emprestimos.filter(
+            Q(user__email__icontains=q) |
+            Q(user__name__icontains=q) |
+            Q(user__last_name__icontains=q) |
+            Q(livro__titulo__icontains=q) |
+            Q(livro__autor__icontains=q)
         )
-        emprestimos = User.objects.filter(
-                user = usuario
-        )
-
-    emprestimos = Emprestimo.objects.all()
-
+    
     return emprestimos
 
 def alugar_livro(livro_id, user):

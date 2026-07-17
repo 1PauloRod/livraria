@@ -100,30 +100,36 @@ async function fetchUsers(){
     }
 }
 
-async function fetchAllRentedBooks(){
+async function fetchAllRentedBooks(page=1){
     try{
         currentView = 'rents';
-        btnNext.hidden = true;
-        btnPrev.hidden = true;
-        pageInfo.hidden = true;
+        btnNext.hidden = false;
+        btnPrev.hidden = false;
+        pageInfo.hidden = false;
         btnSearchBook.hidden = true;
-        allRentedBooks = await getRentedAllBooks();
-        console.log(allRentedBooks.data_devolucao);
-        renderAllReservedBooks(allRentedBooks);
+        currentPage = page;
+        const response = await getRentedAllBooks(page, btnSearch.value.trim());
+        console.log(response.results);
+        totalPages = Math.ceil(response.count / 50);
+        renderAllReservedBooks(response.results);
+        updatePagination(response); 
     }catch(err){
         console.error("Erro ao buscar empréstimos: ", err);
     }
 }
 
-async function fetchAllUsers(){
+async function fetchAllUsers(page=1){
     try{
         currentView = 'users';
-        btnNext.hidden = true;
-        btnPrev.hidden = true;
-        pageInfo.hidden = true;
+        btnNext.hidden = false;
+        btnPrev.hidden = false;
+        pageInfo.hidden = false;
         btnSearchBook.hidden = true;
-        allUsers = await getAllUsers();
-        renderUsers(allUsers);
+        currentPage = page;
+        const response = await getAllUsers(page, btnSearch.value.trim());
+        totalPages = Math.ceil(response.count / 50);
+        renderUsers(response.results);
+        updatePagination(response);
     }catch(err){
         console.error("Erro ao buscar usuários: ", err); 
     }
@@ -353,7 +359,7 @@ function renderUsers(users){
 
 async function returnBookOnClick(rent_id){
     await returnBook(rent_id);
-    await fetchAllRentedBooks();
+    await fetchAllRentedBooks(1);
 }
 
 function renderAllReservedBooks(rentedBooks){
@@ -414,7 +420,6 @@ function renderAllReservedBooks(rentedBooks){
     }); 
 }
 
-
 function renderHome(){
     container.innerHTML = "";
     fetchBooks(currentPage);
@@ -434,23 +439,41 @@ function renderHome(){
     });
 
     rentsBtn.addEventListener("click", () => {
-        fetchAllRentedBooks();
+        fetchAllRentedBooks(1);
     });
 
     btnNext.addEventListener("click", () => {
 
-    if(currentPage < totalPages){
-        fetchBooks(currentPage + 1);
+    if (currentView === 'books'){
+        if(currentPage < totalPages){
+            fetchBooks(currentPage + 1);
+        }
+    }else if (currentView === 'users'){
+        if(currentPage < totalPages){
+            fetchAllUsers(currentPage + 1);
+        }
+    }else if (currentView === 'rents'){
+        if(currentPage < totalPages){
+            fetchAllRentedBooks(currentPage + 1);
+        }
     }
-
     });
 
     btnPrev.addEventListener("click", () => {
 
-    if(currentPage > 1){
+    if (currentView === 'books'){
+        if(currentPage > 1){
         fetchBooks(currentPage - 1);
+        }
+    }else if (currentView === 'users'){
+        if(currentPage > 1){
+            fetchAllUsers(currentPage - 1);
+        }
+    }else if (currentView === 'rents'){
+        if(currentPage > 1){
+            fetchAllRentedBooks(currentPage - 1);
+        }
     }
-
     });
 }
 
@@ -473,19 +496,11 @@ btnSearch.addEventListener("input", (e) => {
     }
 
     else if (currentView === 'users'){
-        const filter = allUsers.filter((user) => 
-        user.email.toLowerCase().includes(termo) || 
-        user.name.toLowerCase().includes(termo)  ||
-        user.last_name.toLowerCase().includes(termo) ) 
-
-        renderUsers(filter); 
+        fetchAllUsers(1);
     }
 
     else if (currentView === 'rents'){
-        const filter = allRentedBooks.filter((rent) => 
-        rent.user.email.toLowerCase().includes(termo))
-        
-        renderAllReservedBooks(filter);
+        fetchAllRentedBooks(1);
     }
 
 })

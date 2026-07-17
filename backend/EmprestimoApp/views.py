@@ -9,7 +9,7 @@ from .permissions import isAdmin, isNotAdmin
 from .services import lista_emprestimo, lista_todos_emprestimos, alugar_livro, devolver_livro
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 from LivroApp.exceptions import BookUnavailableError, BookAlreadyReturnedError
-
+from .pagination import DefaultPagination
 
 class ListaEmprestimo(APIView):
     
@@ -58,10 +58,6 @@ class ListaTodosEmprestimosView(APIView):
 
     permission_classes = [IsAuthenticated, isAdmin]
 
-class ListaTodosEmprestimosView(APIView):
-
-    permission_classes = [IsAuthenticated, isAdmin]
-
     @extend_schema(
         summary="Listar todos os empréstimos",
         description="""
@@ -98,18 +94,17 @@ class ListaTodosEmprestimosView(APIView):
         q = request.query_params.get("q", "")
 
         emprestimos = lista_todos_emprestimos(q)
-
-        return Response(emprestimos)
-
-    def get(self, request):
-
-        q = request.query_params.get("q", "")
-
-        emprestimos = lista_todos_emprestimos(q)
         
-        serializer = EmprestimoSerializer(emprestimos, many=True)
+        paginator = DefaultPagination()
         
-        return Response(serializer.data)
+        page = paginator.paginate_queryset(
+            emprestimos, 
+            request
+        )
+        
+        serializer = EmprestimoSerializer(page, many=True)
+        
+        return paginator.get_paginated_response(serializer.data)
         
 
 class AlugarLivroView(APIView):

@@ -45,9 +45,9 @@ export async function getMe(){
     return await response.json();
 }
 
-export async function getAllUsers(termo=""){
+export async function getAllUsers(page=1, termo=""){
 
-    const response = await fetch(`${BASE_URL}/accounts/listar/?q=${encodeURIComponent(termo)}`, 
+    const response = await fetch(`${BASE_URL}/accounts/listar/?page=${page}&q=${encodeURIComponent(termo)}`, 
         {
             method: "GET", 
             headers: getAuthHeaders()

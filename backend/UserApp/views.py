@@ -9,6 +9,7 @@ from django.contrib.auth import authenticate
 from .models import User
 from EmprestimoApp.models import Emprestimo
 from drf_spectacular.utils import extend_schema, OpenApiParameter
+from .pagination import DefaultPagination
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
@@ -291,10 +292,17 @@ class ListaUsuarios(APIView):
                 )
         else:
             usuarios = User.objects.filter(is_superuser=False)
+            
+        paginator = DefaultPagination()
         
-        serializer = UserSerializer(usuarios, many=True)
+        page = paginator.paginate_queryset(
+            usuarios, 
+            request
+        )
         
-        return Response(serializer.data)
+        serializer = UserSerializer(page, many=True)
+        
+        return paginator.get_paginated_response(serializer.data)
 
 
 

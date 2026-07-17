@@ -57,8 +57,8 @@ export async function getRentedBooks(termo=""){
     return response.json();
 }
 
-export async function getRentedAllBooks(termo=""){
-    const response = await fetch(`${BASE_URL}/emprestimo/listar/todos/?q=${encodeURIComponent(termo)}`, 
+export async function getRentedAllBooks(page=1, termo=""){
+    const response = await fetch(`${BASE_URL}/emprestimo/listar/todos/?page=${page}&q=${encodeURIComponent(termo)}`, 
         {
             method: "GET", 
             headers: getAuthHeaders()
