@@ -5,6 +5,7 @@ from .models import Emprestimo
 from .serializer import EmprestimoSerializer
 from UserApp.models import User
 from  django.utils import timezone
+from datetime import timedelta
 from LivroApp.exceptions import BookUnavailableError, BookAlreadyReturnedError
 from django.db.models import Q
 
@@ -59,7 +60,8 @@ def alugar_livro(livro_id, user):
     
     emprestimo = Emprestimo.objects.create(
         livro=livro,
-        user=user
+        user=user, 
+        data_prevista_devolucao = timezone.now() + timedelta(days=7)
     )
 
     livro.quantidade-=1

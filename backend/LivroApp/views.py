@@ -9,6 +9,7 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiRespon
 from .exceptions import BookNotFoundError, ActivateBookLoan
 from rest_framework.exceptions import ValidationError
 from .pagination import DefaultPagination
+from django.core.cache import cache
 
 class BuscaLivroOpenLibraryView(APIView):
 
@@ -47,8 +48,18 @@ class BuscaLivroOpenLibraryView(APIView):
     def get(self, request):
         
         try:
-            q = request.query_params.get("q")     
+            q = request.query_params.get("q") 
+            
+            cache_key = f"livros_{q}"
+            
+            livros = cache.get(cache_key)
+            
+            if livros:
+                return Response(livros)
+            
             livros = busca_livro(q)
+            
+            cache.set(cache_key, livros, timeout=60)
         
             return Response(livros)
     

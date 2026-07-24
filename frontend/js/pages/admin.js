@@ -373,8 +373,9 @@ function renderAllReservedBooks(rentedBooks){
         const p = document.createElement("p");
 
         const data = new Date(rentedBook.data_emprestimo);
+        const data_prevista = new Date(rentedBook.data_prevista_devolucao);
 
-        let text = `${rentedBook.user.email} - ${rentedBook.livro.autor} - ${rentedBook.livro.titulo} (${rentedBook.livro.ano}) - ${data.toLocaleString("pt-BR")} - `;
+        let text = `${rentedBook.user.email} - ${rentedBook.livro.autor} - ${rentedBook.livro.titulo} (${rentedBook.livro.ano}) - ${data.toLocaleString("pt-BR")} - ${rentedBook.livro.titulo} (${rentedBook.livro.ano}) - ${data_prevista.toLocaleString("pt-BR")} - R$ ${rentedBook.multa} - ${rentedBook.dias_atraso} -`;
 
         const statusSpan = document.createElement("span");
         statusSpan.classList.add("rented-status");

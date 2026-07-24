@@ -14,6 +14,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 class EmprestimoSerializer(serializers.ModelSerializer):
 
+    dias_atraso = serializers.ReadOnlyField()
+    multa = serializers.ReadOnlyField()
     livro = LivroSerializer(read_only=True)
     user = UserSerializer(read_only=True)
 

@@ -4,6 +4,8 @@ import random
 from LivroApp.models import Livro
 from EmprestimoApp.models import Emprestimo
 from django.contrib.auth import get_user_model
+from datetime import timedelta
+from django.utils import timezone
 
 fake = Faker("pt_BR") 
 User = get_user_model()
@@ -43,7 +45,10 @@ class Command(BaseCommand):
             livro = Livro.objects.order_by("?").first()
             Emprestimo.objects.get_or_create(
                 user=user, 
-                livro=livro
+                livro=livro, 
+                defaults={
+            "data_prevista_devolucao": timezone.now() + timedelta(days=7),
+        }
             )
             
         self.stdout.write(

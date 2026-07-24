@@ -217,7 +217,9 @@ class DevolverLivro(APIView):
 
             return Response({
                 "mensagem": "Livro devolvido com sucesso.",
-                "data_devolucao": emprestimo.data_devolucao
+                "data_devolucao": emprestimo.data_devolucao, 
+                "dias_atraso": emprestimo.dias_atraso, 
+                "multa": emprestimo.multa
             }, status=201)
 
         except Emprestimo.DoesNotExist:
